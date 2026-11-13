@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-mode="dia">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Take Your Pick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF0B3; --card:#FFFFFF; --ink:#18223B; --muted:#5A6482; --accent:#2B50FF; --on-accent:#FFFFFF; --line:#18223B22;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-mode="noite"]{
+  --bg:#141A48; --card:#212A6B; --ink:#F3F0FF; --muted:#B3B9E6; --accent:#FFC83D; --on-accent:#141A48; --line:#F3F0FF2B;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5;min-height:100vh;transition:background .5s,color .5s}
+.wrap{max-width:720px;margin:0 auto;padding:28px 18px 56px}
+h1{font-family:'Bricolage Grotesque','Arial Black',system-ui,sans-serif;font-weight:800;font-size:clamp(2.6rem,11vw,4.6rem);line-height:.92;letter-spacing:-.03em;margin:0 0 8px}
+.sub{margin:0 0 26px;color:var(--muted);max-width:42ch}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.tab{flex:1;min-width:max-content;font:inherit;font-weight:700;font-size:1rem;padding:12px 18px;border-radius:14px;border:2px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:background .2s,color .2s}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.modes{display:inline-flex;margin:18px 0 22px;border:2px solid var(--ink);border-radius:999px;padding:4px;gap:4px}
+.mode{font:inherit;font-weight:700;border:0;border-radius:999px;padding:8px 20px;background:transparent;color:var(--ink);cursor:pointer}
+.mode[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.bar h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:1.35rem;margin:0}
+.pickbtn{font:inherit;font-weight:700;cursor:pointer;border:0;background:var(--accent);color:var(--on-accent);padding:12px 22px 14px;border-radius:50% 50% 50% 50% / 38% 38% 62% 62%;transition:transform .15s}
+.pickbtn:active{transform:scale(.94)}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+li{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:2px solid transparent;border-radius:18px;padding:14px 16px;transition:background .5s,border-color .2s,transform .25s}
+li .ic{font-size:1.9rem;line-height:1}
+li h3{margin:0 0 2px;font-size:1.05rem}
+li p{margin:0;color:var(--muted);font-size:.94rem}
+li.picked{border-color:var(--accent);transform:scale(1.02)}
+li.picked::after{content:attr(data-badge);align-self:center;background:var(--accent);color:var(--on-accent);font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+[hidden]{display:none!important}
+.tab.add{flex:0 0 auto;border-style:dashed}
+.ghost{font:inherit;font-size:.9rem;font-weight:700;background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer}
+.ghost.danger[data-armed]{background:#D92D20;border-color:#D92D20;color:#fff}
+.box{background:var(--card);border-radius:18px;padding:16px;margin:16px 0;display:grid;gap:10px}
+.box .pickbtn{justify-self:start}
+.row{display:flex;gap:10px}
+.row input:first-child{width:5rem;flex:none}
+input{font:inherit;color:var(--ink);background:transparent;border:2px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+li .body{flex:1;min-width:0}
+li .x{flex:none;align-self:center;width:32px;height:32px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer}
+li .x:hover{background:var(--line)}
+.foot{margin:28px 0 0}
+li .ic{background:none;border:0;padding:4px;margin:-4px;border-radius:12px;cursor:pointer;font-family:inherit;color:inherit}
+li .ic:hover{background:var(--line)}
+li .ic:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#panel>.ghost{margin:6px 6px 0 0}
+#pickcustom{width:auto;flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.grid button{font-size:1.5rem;line-height:1;background:transparent;border:2px solid transparent;border-radius:12px;padding:6px;cursor:pointer}
+.grid button:hover{border-color:var(--accent)}
+#picker{position:fixed;z-index:20;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:80vh;overflow:auto;margin:0;box-shadow:0 20px 60px #0008}
+#backdrop{position:fixed;inset:0;z-index:19;background:#0009}
+.emojibtn{width:5rem;flex:none;font-size:1.5rem;line-height:1;border:2px solid var(--line);border-radius:12px;background:transparent;cursor:pointer}
+.emojibtn:hover{border-color:var(--accent)}
+.lang{display:flex;justify-content:flex-end;gap:4px;margin-bottom:10px}
+.lang button{font:inherit;font-weight:700;font-size:.85rem;border:2px solid var(--ink);background:transparent;color:var(--ink);padding:4px 12px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+#panel>.danger{margin-top:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lang" id="lang" role="group" aria-label="Idioma / Language"><button data-lang="pt" aria-pressed="true">PT</button><button data-lang="en" aria-pressed="false">EN</button></div>
+  <h1>Take<br>Your Pick</h1>
+  <p class="sub">Sem saber o que vestir, comer ou visitar? Escolha a aba, o período do dia e deixe a sorte ajudar.</p>
+
+  <div class="tabs" role="tablist" aria-label="Categorias" id="tabs"></div>
+  <form class="box" id="catform" hidden>
+    <strong>Nova categoria</strong>
+    <div class="row">
+      <button type="button" class="emojibtn" id="catemoji" aria-label="Escolher emoji da categoria">📌</button>
+      <input id="catname" placeholder="Nome (ex: Filmes)" maxlength="30" required aria-label="Nome da categoria">
+    </div>
+    <button class="pickbtn" type="submit">Criar categoria</button>
+  </form>
+
+  <div class="modes" role="tablist" aria-label="Período" id="modes">
+    <button class="mode" role="tab" data-mode="dia">☀️ Dia</button>
+    <button class="mode" role="tab" data-mode="noite">🌙 Noite</button>
+  </div>
+
+  <p class="sub" id="empty" hidden>Nenhuma categoria por aqui. Toque em ＋ Nova para criar a primeira.</p>
+
+  <div id="panel">
+    <div class="bar">
+      <h2 id="title"></h2>
+      <button class="pickbtn" id="pick">Sortear uma</button>
+    </div>
+    <ul id="list"></ul>
+    <form class="box" id="itemform">
+      <strong id="itemhead">Nova sugestão</strong>
+      <div class="row">
+        <input id="itememoji" placeholder="😀" maxlength="4" aria-label="Emoji">
+        <input id="itemtitle" placeholder="Título" maxlength="60" required aria-label="Título da sugestão">
+      </div>
+      <input id="itemdesc" placeholder="Descrição curta (opcional)" maxlength="120" aria-label="Descrição">
+      <button class="pickbtn" type="submit" id="itembtn">Adicionar</button>
+    </form>
+    <button class="ghost" id="catemojibtn">Mudar emoji da categoria</button>
+    <button class="ghost danger" id="delcat">Excluir esta categoria</button>
+  </div>
+
+  <p class="foot"><button class="ghost" id="reset">Restaurar categorias originais</button></p>
+</div>
+
+<div id="backdrop" hidden></div>
+<div class="box" id="picker" role="dialog" aria-modal="true" aria-labelledby="pickhead" hidden>
+  <strong id="pickhead">Escolha um emoji</strong>
+  <div class="grid" id="pickgrid"></div>
+  <div class="row">
+    <input id="pickcustom" placeholder="Ou digite/cole o seu" maxlength="8" aria-label="Emoji personalizado">
+    <button class="ghost" id="pickuse" type="button">Usar</button>
+  </div>
+  <button class="ghost" id="pickclose" type="button" style="justify-self:start">Cancelar</button>
+</div>
+
+<script>
+const DATA = {
+  roupa: { label: "👕 Roupa", dia: [
+    ["👕","Camiseta branca e jeans claro","O básico que nunca erra e combina com tudo."],
+    ["👗","Vestido leve de algodão","Fresco, fácil de usar com tênis ou rasteirinha."],
+    ["🩳","Bermuda e camisa de linho","Conforto total para dias quentes."],
+    ["🧢","Tênis branco e boné","Ideal para passear a pé o dia todo."],
+    ["🧥","Moletom leve e calça jogger","Para manhãs frescas e tardes tranquilas."],
+    ["👚","Saia midi e regata","Casual com um toque arrumado."]
+  ], noite: [
+    ["🧥","Jaqueta jeans e camiseta preta","Clássico para qualquer programa à noite."],
+    ["👔","Camisa social aberta e calça preta","Elegante sem exagerar."],
+    ["👗","Vestido midi escuro e sandália","Pronto para jantar ou ouvir música."],
+    ["🧶","Suéter de tricô e calça de alfaiataria","Quentinho e com estilo."],
+    ["🕴️","Blazer e jeans escuro","Charme fácil de montar."],
+    ["🌬️","Corta-vento e tênis","Para noites frias ao ar livre."]
+  ]},
+  comida: { label: "🍽️ Comida", dia: [
+    ["🥐","Café da manhã colonial","Pães, queijos, bolos e frutas à vontade."],
+    ["🍞","Pão na chapa com café com leite","Simples, rápido e reconfortante."],
+    ["🍇","Açaí com frutas e granola","Refrescante para a tarde de calor."],
+    ["🥗","Salada de grãos com frango grelhado","Leve e nutritiva para o almoço."],
+    ["🍛","Prato feito caprichado","Arroz, feijão, carne e salada: sempre acerta."],
+    ["🥪","Sanduíche natural e suco","Prático para comer na rua."]
+  ], noite: [
+    ["🍕","Pizza para dividir","Escolha dois sabores e peça uma borda recheada."],
+    ["🍔","Hambúrguer artesanal","Com batata frita e milk-shake."],
+    ["🍝","Massa ao molho caseiro","Conforto em forma de prato."],
+    ["🥩","Churrasco","Carnes na brasa com farofa e vinagrete."],
+    ["🍲","Caldo ou sopa quente","Perfeito para noites geladas."],
+    ["🍣","Sushi ou temaki","Para uma noite diferente."]
+  ]},
+  lugares: { label: "📍 Lugares", dia: [
+    ["🌳","Parque ou praça com piquenique","Leve uma canga, frutas e algo para beber."],
+    ["🧺","Feira ou mercado local","Experimente produtos e sabores da região."],
+    ["🖼️","Museu ou centro cultural","Bom para qualquer clima."],
+    ["🥾","Trilha curta","Natureza e uma bela vista no caminho."],
+    ["📚","Café com livraria","Um programa calmo para ler e relaxar."],
+    ["🏞️","Mirante","Vá cedo para pegar a luz bonita."]
+  ], noite: [
+    ["🎬","Cinema","Escolha um filme e não esqueça a pipoca."],
+    ["🎸","Bar com música ao vivo","Boa conversa com trilha sonora."],
+    ["🌃","Caminhada por ruas iluminadas","Grátis e ótima para conversar."],
+    ["🍨","Sorveteria ou doceria","Para fechar a noite com sobremesa."],
+    ["✨","Observar as estrelas","Procure um lugar longe das luzes da cidade."],
+    ["🎭","Teatro ou show","Veja o que está em cartaz esta semana."]
+  ]}
+};
+DATA.roupa.dia.push(
+  ["🕶️","Óculos escuro e camiseta de algodão","Visual simples que protege do sol."],
+  ["👖","Calça cargo e regata","Prática, com bolsos para tudo."],
+  ["🩴","Chinelo e bermuda de praia","Para dias de calor e programa leve."],
+  ["👒","Chapéu de aba e vestido solto","Estilo e proteção contra o sol."],
+  ["🎽","Roupa esportiva","Para caminhar, pedalar ou fazer trilha."],
+  ["🧣","Camisa xadrez e jeans","Casual para dias de meia-estação."]
+);
+DATA.roupa.noite.push(
+  ["🥻","Vestido preto básico","Combina com salto, tênis ou bota."],
+  ["🧤","Casaco longo e botas","Elegante e quente para o frio."],
+  ["👕","Camisa estampada e calça escura","Descontraído para barzinho."],
+  ["👠","Saia de couro e blusa de manga longa","Ousado e moderno."],
+  ["🧢","Camiseta oversized e jaqueta bomber","Estilo urbano e confortável."],
+  ["💍","Look todo preto com acessórios","Simples, mas com presença."]
+);
+DATA.comida.dia.push(
+  ["🍳","Ovos mexidos com torrada","Café da manhã rápido e cheio de energia."],
+  ["🥞","Panquecas com mel e frutas","Doce na medida para começar bem."],
+  ["🍲","Feijoada de sábado","Para um almoço demorado com a turma."],
+  ["🥙","Wrap de frango com legumes","Leve e fácil de levar."],
+  ["🍰","Café com bolo caseiro","Pausa da tarde clássica."],
+  ["🧃","Suco natural com pastel","Combinação de feira que nunca falha."]
+);
+DATA.comida.noite.push(
+  ["🌮","Tacos ou burritos","Para dividir e montar do seu jeito."],
+  ["🍜","Lámen ou yakisoba","Quentinho e cheio de sabor."],
+  ["🥘","Risoto de cogumelos","Cremoso e perfeito para um jantar a dois."],
+  ["🍟","Porção de petiscos","Batata, calabresa e cerveja gelada."],
+  ["🍫","Fondue de chocolate","Sobremesa divertida para compartilhar."],
+  ["🥟","Pastelaria ou massas recheadas","Boa pedida para uma noite despretensiosa."]
+);
+DATA.lugares.dia.push(
+  ["🚲","Passeio de bicicleta","Pela ciclovia, orla ou estradas tranquilas."],
+  ["⛲","Praça central e arredores","Boa para fotos, café e caminhada."],
+  ["🌸","Jardim botânico","Calmo, bonito e bom para relaxar."],
+  ["🏛️","Igreja ou prédio histórico","Descubra a história do lugar."],
+  ["🍷","Vinícola ou cervejaria","Visita com degustação e vista bonita."],
+  ["🏊","Cachoeira, rio ou piscina","Para se refrescar nos dias quentes."]
+);
+DATA.lugares.noite.push(
+  ["🎳","Boliche ou fliperama","Diversão competitiva para o grupo."],
+  ["🔥","Fogueira ou luau","Música, conversa e céu aberto."],
+  ["🎤","Karaokê","Para soltar a voz com os amigos."],
+  ["🌌","Mirante à noite","Vista da cidade toda iluminada."],
+  ["🎲","Noite de jogos de tabuleiro","Em casa ou em um café temático."],
+  ["💃","Balada ou pista de dança","Para quem quer ficar acordado até tarde."]
+);
+const KEY="typ-data-v1";
+const DEFAULT=JSON.parse(JSON.stringify(DATA));
+const EN_DATA={
+roupa:{dia:[["White tee and light jeans","The basic that never fails and goes with everything."],["Light cotton dress","Fresh and easy to wear with sneakers or sandals."],["Bermuda shorts and linen shirt","Total comfort for hot days."],["White sneakers and cap","Ideal for walking around all day."],["Light sweatshirt and joggers","For cool mornings and relaxed afternoons."],["Midi skirt and tank top","Casual with a polished touch."],["Sunglasses and cotton tee","A simple look that protects from the sun."],["Cargo pants and tank top","Practical, with pockets for everything."],["Flip-flops and beach shorts","For hot days and easygoing plans."],["Wide-brim hat and loose dress","Style and sun protection."],["Sportswear","For walking, biking or hiking."],["Plaid shirt and jeans","Casual for in-between weather."]],
+noite:[["Denim jacket and black tee","A classic for any night out."],["Open dress shirt and black pants","Elegant without overdoing it."],["Dark midi dress and sandals","Ready for dinner or live music."],["Knit sweater and tailored pants","Warm and stylish."],["Blazer and dark jeans","Easy charm."],["Windbreaker and sneakers","For cold nights outdoors."],["Basic black dress","Goes with heels, sneakers or boots."],["Long coat and boots","Elegant and warm for the cold."],["Printed shirt and dark pants","Relaxed for a bar night."],["Leather skirt and long-sleeve top","Bold and modern."],["Oversized tee and bomber jacket","Urban and comfortable."],["All-black look with accessories","Simple, but with presence."]]},
+comida:{dia:[["Brazilian-style breakfast spread","Breads, cheeses, cakes and fruit galore."],["Grilled bread with milky coffee","Simple, quick and comforting."],["Açaí bowl with fruit and granola","Refreshing for a hot afternoon."],["Grain salad with grilled chicken","Light and nutritious for lunch."],["Hearty plate of the day","Rice, beans, meat and salad: always a hit."],["Light sandwich and juice","Handy to eat on the go."],["Scrambled eggs with toast","Quick breakfast full of energy."],["Pancakes with honey and fruit","Just sweet enough to start well."],["Saturday feijoada","For a long lunch with friends."],["Chicken and veggie wrap","Light and easy to carry."],["Coffee with homemade cake","The classic afternoon break."],["Fresh juice with pastel","A street-market combo that never fails."]],
+noite:[["Pizza to share","Pick two flavors and get the stuffed crust."],["Craft burger","With fries and a milkshake."],["Pasta with homemade sauce","Comfort on a plate."],["Barbecue","Grilled meats with farofa and vinaigrette."],["Hot broth or soup","Perfect for freezing nights."],["Sushi or temaki","For a different kind of night."],["Tacos or burritos","To share and build your own way."],["Ramen or yakisoba","Hot and full of flavor."],["Mushroom risotto","Creamy and perfect for a dinner for two."],["Snack platter","Fries, sausage and an ice-cold beer."],["Chocolate fondue","Fun dessert to share."],["Pastries or stuffed pastas","A good choice for a low-key night."]]},
+lugares:{dia:[["Park or square picnic","Bring a blanket, fruit and something to drink."],["Local market or fair","Try regional products and flavors."],["Museum or cultural center","Great in any weather."],["Short hike","Nature and a beautiful view along the way."],["Café with a bookstore","A calm plan to read and unwind."],["Lookout point","Go early to catch the beautiful light."],["Bike ride","Along a bike path, the waterfront or quiet roads."],["Town square and surroundings","Good for photos, coffee and a walk."],["Botanical garden","Calm, beautiful and relaxing."],["Church or historic building","Discover the history of the place."],["Winery or brewery","A visit with tasting and a lovely view."],["Waterfall, river or pool","To cool off on hot days."]],
+noite:[["Movie theater","Pick a film and don't forget the popcorn."],["Bar with live music","Good conversation with a soundtrack."],["Walk along lit-up streets","Free and great for chatting."],["Ice cream or dessert shop","To end the night with something sweet."],["Stargazing","Find a spot away from the city lights."],["Theater or concert","See what's playing this week."],["Bowling or arcade","Competitive fun for the group."],["Bonfire or beach party","Music, conversation and open sky."],["Karaoke","To belt it out with friends."],["Lookout at night","A view of the whole city lit up."],["Board game night","At home or in a themed café."],["Club or dance floor","For those who want to stay up late."]]}};
+const TR={};
+for(const c in EN_DATA)for(const m of ["dia","noite"])DEFAULT[c][m].forEach((it,j)=>{TR[it[1]]=EN_DATA[c][m][j];});
+const CAT_EN={Roupa:"Clothes",Comida:"Food",Lugares:"Places"};
+const T={
+pt:{intro:"Sem saber o que vestir, comer ou visitar? Escolha a aba, o período do dia e deixe a sorte ajudar.",empty:"Nenhuma categoria por aqui. Toque em ＋ Nova para criar a primeira.",pickBtn:"Sortear uma",newCat:"Nova categoria",createCat:"Criar categoria",catPh:"Nome (ex: Filmes)",chooseEmoji:"Escolher emoji da categoria",day:"Dia",night:"Noite",newItem:"Nova sugestão",itemTitlePh:"Título",itemDescPh:"Descrição curta (opcional)",addIn:"Adicionar em",chCatEmoji:"Mudar emoji da categoria",delCat:"Excluir esta categoria",resetBtn:"Restaurar categorias originais",use:"Usar",cancel:"Cancelar",customPh:"Ou digite/cole o seu",cats:"Categorias",period:"Período",forDay:"para o dia",forNight:"para a noite",new:"Nova",chosen:"Sua escolha",chemoji:"Mudar emoji de",remove:"Remover",noitems:"Ainda não há sugestões aqui. Use o formulário abaixo para adicionar a primeira.",tapDel:"Toque de novo para excluir",tapReset:"Toque de novo para restaurar",pickItem:"Escolha o emoji desta sugestão",pickCat:"Escolha o emoji da categoria",pickNew:"Escolha o emoji da nova categoria"},
+en:{intro:"Not sure what to wear, eat or visit? Pick a tab, choose the time of day and let luck lend a hand.",empty:"No categories here. Tap ＋ New to create the first one.",pickBtn:"Pick one for me",newCat:"New category",createCat:"Create category",catPh:"Name (e.g. Movies)",chooseEmoji:"Choose category emoji",day:"Day",night:"Night",newItem:"New suggestion",itemTitlePh:"Title",itemDescPh:"Short description (optional)",addIn:"Add to",chCatEmoji:"Change category emoji",delCat:"Delete this category",resetBtn:"Restore original categories",use:"Use",cancel:"Cancel",customPh:"Or type/paste your own",cats:"Categories",period:"Time of day",forDay:"for the day",forNight:"for the night",new:"New",chosen:"Your pick",chemoji:"Change emoji of",remove:"Remove",noitems:"No suggestions here yet. Use the form below to add the first one.",tapDel:"Tap again to delete",tapReset:"Tap again to restore",pickItem:"Choose this suggestion's emoji",pickCat:"Choose the category emoji",pickNew:"Choose the new category's emoji"}};
+const S=k=>T[lang][k];
+function catText(c){const m=c.label.match(/^(\S+)\s(.*)$/);const n=m?m[2]:c.label;return{e:m?m[1]:"",n:lang==="en"&&CAT_EN[n]||n};}
+const catShow=c=>{const t=catText(c);return(t.e+" "+t.n).trim();};
+function applyStatic(){
+  const q=s=>document.querySelector(s);
+  const tx=(s,k)=>{q(s).textContent=S(k);};
+  const ph=(s,k)=>{q(s).placeholder=S(k);};
+  tx(".wrap > p.sub","intro");tx("#empty","empty");tx("#pick","pickBtn");
+  tx("#catform strong","newCat");tx("#catform button[type=submit]","createCat");
+  tx("#itemhead","newItem");tx("#catemojibtn","chCatEmoji");tx("#delcat","delCat");
+  tx("#reset","resetBtn");tx("#pickuse","use");tx("#pickclose","cancel");
+  ph("#catname","catPh");ph("#itemtitle","itemTitlePh");ph("#itemdesc","itemDescPh");ph("#pickcustom","customPh");
+  ["catname","itemtitle","itemdesc","pickcustom"].forEach(i=>$(i).setAttribute("aria-label",$(i).placeholder));
+  $("catemoji").setAttribute("aria-label",S("chooseEmoji"));
+  $("tabs").setAttribute("aria-label",S("cats"));$("modes").setAttribute("aria-label",S("period"));
+  q('.mode[data-mode="dia"]').textContent="☀️ "+S("day");
+  q('.mode[data-mode="noite"]').textContent="🌙 "+S("night");
+  ["delcat","reset"].forEach(i=>delete $(i).dataset.armed);
+}
+let tab=Object.keys(DATA)[0], mode="dia", lang=(navigator.language||"pt").toLowerCase().startsWith("en")?"en":"pt";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(KEY)||"null");
+    if(s&&s.data&&typeof s.data==="object"){
+      for(const k in DATA)delete DATA[k];
+      Object.assign(DATA,s.data);
+      tab=s.tab;
+      mode=s.mode==="noite"?"noite":"dia";
+      lang=s.lang==="en"?"en":s.lang==="pt"?"pt":lang;
+    }
+  }catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({data:DATA,tab,mode,lang}));}catch(e){}}
+function twice(btn,label,fn){
+  if(btn.dataset.armed){delete btn.dataset.armed;fn();return;}
+  const old=btn.textContent;btn.dataset.armed="1";btn.textContent=label;
+  setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed){delete btn.dataset.armed;btn.textContent=old;}},3000);
+}
+
+function render(){
+  closePicker();
+  document.documentElement.dataset.mode=mode;
+  document.documentElement.lang=lang==="en"?"en":"pt-BR";
+  document.querySelectorAll("#lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===lang));
+  applyStatic();
+  const keys=Object.keys(DATA);
+  if(!DATA[tab])tab=keys[0];
+  $("tabs").innerHTML=keys.map(k=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===tab}">${esc(catShow(DATA[k]))}</button>`).join("")
+    +`<button class="tab add" id="newcat">＋ ${esc(S("new"))}</button>`;
+  document.querySelectorAll(".mode").forEach(b=>b.setAttribute("aria-selected",b.dataset.mode===mode));
+  const cur=DATA[tab];
+  $("panel").hidden=!cur;
+  $("empty").hidden=!!cur;
+  if(cur){
+    const name=catText(cur).n;
+    $("title").textContent=name+" "+(mode==="dia"?S("forDay"):S("forNight"));
+    $("itembtn").textContent=S("addIn")+" "+(mode==="dia"?S("day"):S("night"));
+    const items=cur[mode]||[];
+    $("list").innerHTML=items.length?items.map(([ic,t0,d0],i)=>{const tr=lang==="en"&&TR[t0],t=tr?tr[0]:t0,d=tr?tr[1]:d0;return `<li data-badge="${esc(S("chosen"))}"><button class="ic" data-i="${i}" aria-label="${esc(S("chemoji"))} ${esc(t)}">${esc(ic)}</button><div class="body"><h3>${esc(t)}</h3>${d?`<p>${esc(d)}</p>`:""}</div><button class="x" data-i="${i}" aria-label="${esc(S("remove"))} ${esc(t)}">✕</button></li>`}).join("")
+      :`<li><div class="body"><p>${esc(S("noitems"))}</p></div></li>`;
+  }
+  save();
+}
+
+$("tabs").addEventListener("click",e=>{
+  if(e.target.closest("#newcat")){const f=$("catform");f.hidden=!f.hidden;if(!f.hidden)$("catname").focus();return;}
+  const b=e.target.closest("[data-tab]");if(b){tab=b.dataset.tab;render();}
+});
+$("modes").addEventListener("click",e=>{const b=e.target.closest(".mode");if(b){mode=b.dataset.mode;render();}});
+$("catform").addEventListener("submit",e=>{
+  e.preventDefault();
+  const name=$("catname").value.trim();if(!name)return;
+  const emoji=$("catemoji").textContent.trim()||"📌";
+  const key="c"+Date.now();
+  DATA[key]={label:emoji+" "+name,dia:[],noite:[]};
+  tab=key;e.target.reset();$("catemoji").textContent="📌";e.target.hidden=true;render();
+});
+$("itemform").addEventListener("submit",e=>{
+  e.preventDefault();
+  const t=$("itemtitle").value.trim();if(!t||!DATA[tab])return;
+  (DATA[tab][mode]=DATA[tab][mode]||[]).push([$("itememoji").value.trim()||"✨",t,$("itemdesc").value.trim()]);
+  e.target.reset();render();
+});
+$("list").addEventListener("click",e=>{
+  const ic=e.target.closest(".ic");
+  if(ic&&DATA[tab]){openPicker({t:"item",i:+ic.dataset.i},S("pickItem"));return;}
+  const x=e.target.closest(".x");if(!x||!DATA[tab])return;
+  DATA[tab][mode].splice(+x.dataset.i,1);render();
+});
+$("delcat").addEventListener("click",e=>twice(e.currentTarget,S("tapDel"),()=>{delete DATA[tab];tab=Object.keys(DATA)[0];render();}));
+$("reset").addEventListener("click",e=>twice(e.currentTarget,S("tapReset"),()=>{
+  for(const k in DATA)delete DATA[k];
+  Object.assign(DATA,JSON.parse(JSON.stringify(DEFAULT)));
+  tab=Object.keys(DATA)[0];render();
+}));
+$("pick").addEventListener("click",()=>{
+  const items=[...document.querySelectorAll("#list li")].filter(li=>li.querySelector(".x"));
+  if(!items.length)return;
+  const prev=items.findIndex(li=>li.classList.contains("picked"));
+  items.forEach(li=>li.classList.remove("picked"));
+  let i;do{i=Math.floor(Math.random()*items.length);}while(i===prev&&items.length>1);
+  items[i].classList.add("picked");
+  items[i].scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+});
+const EMOJIS="😀 😍 😎 🤩 🥳 😴 👕 👗 👖 🧥 👔 👟 👠 🧢 🕶️ 🧣 🍕 🍔 🌮 🍣 🍝 🥗 🍰 🍦 ☕ 🍺 🍷 🥐 🍎 🍇 🌳 🏖️ ⛰️ 🏛️ 🎬 🎵 🎸 🎤 🎮 🎲 📚 🛍️ 🚲 ⚽ 🏊 ✈️ 🚗 🌙 ☀️ ⭐ ❤️ 🔥 🎉 💡 📍 📌".split(" ");
+$("pickgrid").innerHTML=EMOJIS.map(e=>`<button type="button" data-e="${e}">${e}</button>`).join("");
+let editing=null;
+function openPicker(target,head){
+  editing=target;$("pickhead").textContent=head;$("pickcustom").value="";
+  $("backdrop").hidden=false;$("picker").hidden=false;$("picker").scrollTop=0;
+  const f=$("pickgrid").firstElementChild;if(f)f.focus();
+}
+function closePicker(){editing=null;$("picker").hidden=true;$("backdrop").hidden=true;}
+function applyEmoji(e){
+  e=(e||"").trim();if(!e||!editing)return;
+  if(editing.t==="new"){$("catemoji").textContent=e;closePicker();$("catname").focus();return;}
+  if(!DATA[tab])return;
+  if(editing.t==="cat"){const c=DATA[tab];c.label=e+" "+c.label.replace(/^\S+\s/,"");}
+  else{const it=(DATA[tab][mode]||[])[editing.i];if(it)it[0]=e;}
+  closePicker();render();
+}
+$("pickgrid").addEventListener("click",e=>{const b=e.target.closest("[data-e]");if(b)applyEmoji(b.dataset.e);});
+$("pickuse").addEventListener("click",()=>applyEmoji($("pickcustom").value));
+$("pickcustom").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyEmoji(e.target.value);}});
+$("pickclose").addEventListener("click",closePicker);
+$("backdrop").addEventListener("click",closePicker);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&editing)closePicker();});
+$("catemoji").addEventListener("click",()=>openPicker({t:"new"},S("pickNew")));
+$("catemojibtn").addEventListener("click",()=>openPicker({t:"cat"},S("pickCat")));
+$("lang").addEventListener("click",e=>{const b=e.target.closest("[data-lang]");if(b&&b.dataset.lang!==lang){lang=b.dataset.lang;render();}});
+load();
+render();
+</script>
+</body>
+</html>
